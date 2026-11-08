@@ -51,6 +51,12 @@
 - 导出：设置里的「导出目录」，默认当前工作区下的 `reports/`，文件名 `weekly-<ISO 周>.md`；可填绝对路径。
 - 存储是插件自管的 JSON 文件，没有使用框架的 KV domain——profile 里安装的插件解析不到 `@deepseek-ai/dsh-storage-domain`，因此以文件形式落地，行为等价。
 
+## 升级
+
+面板「设置」里有版本号和「检查更新」。用 npm 安装时，发现新版本会在面板顶部出现提示条，点「升级」即走 `pluginManager.updateBundle`（先卸载再安装，失败自动回滚，完成后刷新页面）。
+
+本地目录链接安装（`link:`）不支持一键升级——发布到 npm 并从 registry 安装后该能力才可用。发布流程、市场索引和升级的坑都写在 [docs/PUBLISHING.md](docs/PUBLISHING.md)。
+
 ## 目录结构
 
 ```
@@ -60,12 +66,15 @@ client.js         面板：sidebar.panellist 图标 + main 面板（key = weekly
 cordis.patch.yml  插入 weekly-report 这一行
 locale/           meta 标题与描述（zh / en）
 icon.svg          插件图标
+docs/PUBLISHING.md 发布、升级与市场索引说明
+CHANGELOG.md      版本变更
 ```
 
 ## 开发
 
 ```bash
 npm run check      # node --check index.js client.js lib/impl.js
+npm pack --dry-run # 看发布包内容
 ```
 
 面板通过同源 `POST /weekly/api` 调 Host，动作：`state / week / add / update / setState / carry / delete / report / write / polish / settings`。面板与工具调用同一套操作实现。

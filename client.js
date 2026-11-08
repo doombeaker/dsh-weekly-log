@@ -176,6 +176,9 @@ window.__ModuleLoader__.load({
       .wr-settings label{font-size:13px;color:var(--dsw-alias-label-secondary)}
       .wr-settings .wr-note{grid-column:2;font-size:12px;color:var(--dsw-alias-label-secondary);word-break:break-all}
       .wr-split{height:1px;background:var(--dsw-alias-border-l1);margin:12px 0}
+      .wr-update{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid color-mix(in srgb, var(--dsw-alias-brand-primary) 42%, transparent);background:color-mix(in srgb, var(--dsw-alias-brand-primary) 8%, transparent);border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:13px}
+      .wr-update .wr-grow{flex:1;min-width:0}
+      .wr-version{font-size:12px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}
       .wr-inline-edit{display:flex;gap:8px;align-items:center}
       .wr-inline-edit .wr-input{flex:1}
     `
@@ -209,9 +212,34 @@ window.__ModuleLoader__.load({
       const [settingsOpen, setSettingsOpen] = useState(false)
       const [settingsDraft, setSettingsDraft] = useState({ author: '', reportDir: '' })
       const [report, setReport] = useState({ open: false, draft: '', polished: '', busy: false, saved: '', label: '' })
+      const [upd, setUpd] = useState({ data: null, armed: false, upgrading: false, banner: true })
       const draftRef = useRef(null)
       const confirmTimer = useRef(null)
       const abortRef = useRef(null)
+
+      const checkUpdateNow = async (force) => {
+        try {
+          const data = await api({ action: 'checkUpdate', refresh: force === true })
+          setUpd(current => ({ ...current, data }))
+          return data
+        } catch (err) {
+          setUpd(current => ({ ...current, data: { ...(current.data ?? {}), error: err.message } }))
+          return null
+        }
+      }
+
+      const startUpgrade = async () => {
+        if (!upd.armed) {
+          setUpd(current => ({ ...current, armed: true }))
+          return
+        }
+        setUpd(current => ({ ...current, armed: false, upgrading: true }))
+        try {
+          await api({ action: 'upgrade' })
+        } catch (err) {
+          setUpd(current => ({ ...current, upgrading: false, data: { ...(current.data ?? {}), error: err.message } }))
+        }
+      }
 
       const refresh = async () => {
         try {
@@ -226,6 +254,28 @@ window.__ModuleLoader__.load({
       }
 
       useEffect(() => { refresh() }, [])
+
+      useEffect(() => {
+        // One silent check on mount; the banner only appears when a release exists.
+        checkUpdateNow(false)
+      }, [])
+
+      useEffect(() => {
+        if (!upd.upgrading) return undefined
+        const startedAt = Date.now()
+        const timer = setInterval(async () => {
+          const data = await checkUpdateNow(true)
+          const phase = data?.lastUpgrade?.phase
+          if (phase === 'done' || phase === 'failed') {
+            clearInterval(timer)
+            setUpd(current => ({ ...current, upgrading: false }))
+          } else if (Date.now() - startedAt > 120_000) {
+            clearInterval(timer)
+            setUpd(current => ({ ...current, upgrading: false }))
+          }
+        }, 2000)
+        return () => clearInterval(timer)
+      }, [upd.upgrading])
 
       const run = async (payload, options = {}) => {
         setBusy(true)
@@ -372,6 +422,34 @@ window.__ModuleLoader__.load({
       const isCurrent = week === snap.currentWeek
       const relative = isCurrent ? '本周' : week === snap.lastWeek ? '上周' : week === snap.nextWeek ? '下周' : ''
 
+      const updData = upd.data
+      const updLast = updData?.lastUpgrade
+      const updTarget = updLast?.target ?? updData?.latest
+      const updApplied = updLast?.phase === 'done' && updLast?.application === 'applied'
+      const updRestart = updLast?.phase === 'done' && updLast?.application === 'restart-required'
+      const updFailed = updLast?.phase === 'failed' || (updLast?.phase === 'done' && updLast?.application !== 'applied' && updLast?.application !== 'restart-required')
+      const updNew = !!updData?.updateAvailable && !!updData?.canSelfUpgrade
+
+      const updateBanner = () => {
+        const ready = updNew || upd.upgrading || updApplied || updRestart || updFailed
+        if (!upd.banner || !ready) return null
+        const [text, actions] = upd.upgrading
+          ? [`正在升级到 ${updTarget ?? '新版本'}…`, [h('span', { key: 'wait', className: 'wr-hint' }, '升级期间不要重启 Harness')]]
+          : updApplied
+            ? [`已升级到 ${updTarget ?? '新版本'}，刷新页面即可生效`, [button('刷新页面', () => window.location.reload(), 'primary'), button('稍后', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
+            : updRestart
+              ? [`已安装 ${updTarget ?? '新版本'}，需要重启 Harness 后生效`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
+              : updFailed
+                ? [`升级失败：${updLast?.error?.diagnostic ?? updLast?.error?.message ?? updLast?.error?.code ?? '未知原因'}`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
+                : [`发现新版本 ${updData.latest}（当前 ${updData.installedVersion}）`, [
+                  button(upd.armed ? `确认升级到 ${updData.latest}` : '升级', startUpgrade, upd.armed ? 'accent' : ''),
+                  button('稍后', () => setUpd(current => ({ ...current, banner: false })), 'ghost'),
+                ]]
+        return h('div', { className: 'wr-update' },
+          h('span', { className: 'wr-grow' }, text),
+          ...actions)
+      }
+
       const rowView = (row) => {
         const status = row.viewStatus
         const meta = []
@@ -428,6 +506,8 @@ window.__ModuleLoader__.load({
             h('span', null, error),
             h('button', { type: 'button', className: 'wr-btn ghost', onClick: () => setError('') }, '知道了')) : null,
 
+          updateBanner(),
+
           settingsOpen ? h('div', { className: 'wr-card' },
             h('div', { className: 'wr-settings' },
               h('label', null, '姓名'),
@@ -447,7 +527,21 @@ window.__ModuleLoader__.load({
             h('div', { className: 'wr-split' }),
             h('div', { className: 'wr-report-bar' },
               button('保存设置', saveSettings, 'primary'),
-              h('span', { className: 'wr-hint' }, '姓名只需设置一次，之后生成的周报会自动带上。'))) : null,
+              h('span', { className: 'wr-hint' }, '姓名只需设置一次，之后生成的周报会自动带上。')),
+            h('div', { className: 'wr-split' }),
+            h('div', { className: 'wr-report-bar' },
+              h('span', { className: 'wr-version' }, `版本 ${snap.version ?? '0.0.0'}`),
+              button('检查更新', () => { setUpd(current => ({ ...current, banner: true })); checkUpdateNow(true) }, 'ghost'),
+              h('span', { className: 'wr-hint' },
+                updData?.reason === 'link-install'
+                  ? '本地目录链接安装，不支持一键升级；从 npm 安装后这里可用'
+                  : updData?.error
+                    ? `检查失败：${updData.error}`
+                    : updData && !updData.updateAvailable && !updData.latest
+                      ? '已是最新版本'
+                      : updData?.updateAvailable
+                        ? `有新版本 ${updData.latest}`
+                        : ''))) : null,
 
           h('div', { className: 'wr-card tight' },
             h('div', { className: 'wr-capture' },
