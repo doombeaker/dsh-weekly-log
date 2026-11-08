@@ -39,7 +39,27 @@ npm publish
 
 `publishConfig.access` 已设为 `public`，`private` 已移除，`prepublishOnly` 会先跑一遍语法检查。
 
-发布物只包含运行所需文件（`index.js`、`client.js`、`lib/impl.js`、`cordis.patch.yml`、`locale/*`、`icon.svg`、`README.md`、`CHANGELOG.md`、`LICENSE`）。
+发布物只包含运行所需文件（`index.js`、`client.js`、`lib/impl.js`、`cordis.patch.yml`、`locale/*`、`icon.svg`、`assets/`、`screenshots.json`、`README.md`、`README.zh.md`、`CHANGELOG.md`、`LICENSE`）。
+
+### 发布之后：staged release（2026-11 实测）
+
+启用 2FA 的账号执行 `npm publish --registry=https://registry.npmjs.org` 不会立刻上线：
+
+1. registry 先出现一个 `0.0.0-stage` 占位版本（`"stub": true`，只有 `package.json` + `README`），用于占住包名；
+2. 真正的版本进入 npm 的 staged release 审核，通常 1–2 分钟后自动放行，`dist-tags.latest` 才指向真实版本；
+3. 这期间 `npm i <pkg>` 会装到没有代码的空壳——**不要在此时切换安装方式**。
+
+验证方式：
+
+```bash
+npm view dsh-weekly-log dist-tags.latest --registry=https://registry.npmjs.org   # 期望 0.1.x
+npm view dsh-weekly-log dist.shasum  --registry=https://registry.npmjs.org        # 应与本地 npm pack 的 shasum 一致
+```
+
+两个前提：
+
+- **必须在真实 TTY 里执行**：被脚本/管道调用时 npm 拿不到 OTP 输入，直接报 `EOTP`。非交互环境用 `script -q /dev/null npm publish --registry=https://registry.npmjs.org` 造一个 pty。
+- 本机 `~/.npmrc` 默认 registry 是 `npmmirror`，而 token 只对 `registry.npmjs.org` 生效，所以发布与安装都要显式带 `--registry`（安装时用 `plugin_manager` 的 `registry` 参数）。
 
 ---
 
