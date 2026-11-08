@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Weekly report">
+  <rect x="6" y="11" width="52" height="47" rx="9" fill="#2f6f4f"/>
+  <path d="M6 20a9 9 0 0 1 9-9h34a9 9 0 0 1 9 9v4H6z" fill="#24573e"/>
+  <circle cx="20" cy="11" r="3.2" fill="#f4f7f4"/>
+  <circle cx="44" cy="11" r="3.2" fill="#f4f7f4"/>
+  <path d="M17.5 32.5l4.2 4.2 7.6-8.2" fill="none" stroke="#f4f7f4" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M17.5 46.5l4.2 4.2 7.6-8.2" fill="none" stroke="#c9dfd3" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="35" y="31" width="15" height="3.8" rx="1.9" fill="#f4f7f4"/>
+  <rect x="35" y="45" width="15" height="3.8" rx="1.9" fill="#c9dfd3"/>
+</svg>

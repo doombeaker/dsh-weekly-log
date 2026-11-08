@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "title": "Weekly report list",
+    "description": "Keep a running list of what you did and plan to do, then turn a week of it into a weekly report with a one-click model polish."
+  },
+  "panel": {
+    "title": "Weekly report",
+    "subtitle": "Log one line at a time; export a week when the report is due."
+  }
+}
