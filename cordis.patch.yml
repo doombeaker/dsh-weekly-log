@@ -1,4 +1,4 @@
 - insert:
     - id: weekly-report
-      name: 'dsh-weekly-report'
+      name: 'dsh-weekly-log'
       config: {}

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "title": "Weekly report list",
-    "description": "Keep a running list of what you did and plan to do, then turn a week of it into a weekly report with a one-click model polish."
+    "title": "Weekly log",
+    "description": "Keep a running list of work items in a panel, copy any ISO week out as a weekly report, and let the configured model tidy the wording — 2 agent tools, no API key."
   },
   "panel": {
-    "title": "Weekly report",
+    "title": "Weekly log",
     "subtitle": "Log one line at a time; export a week when the report is due."
   }
 }

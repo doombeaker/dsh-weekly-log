@@ -5,7 +5,7 @@
  * leftovers forward, then build the report and polish it with the default model.
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-weekly-report',
+  id: 'dsh-weekly-log',
   factory(require) {
     const React = require('react')
     const h = React.createElement

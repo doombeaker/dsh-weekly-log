@@ -1,7 +1,7 @@
 {
-  "name": "dsh-weekly-report",
+  "name": "dsh-weekly-log",
   "version": "0.1.0",
-  "description": "Keep a running list of what you did and plan to do, then turn a week of it into a weekly report with a one-click model polish.",
+  "description": "Keep a running list of work items in a panel, copy any ISO week out as a weekly report, and let the configured model tidy the wording — 2 agent tools, no API key.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -17,7 +17,10 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
+    "assets/",
+    "screenshots.json",
     "README.md",
+    "README.zh.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
@@ -34,10 +37,28 @@
     "check": "node --check index.js && node --check client.js && node --check lib/impl.js",
     "prepublishOnly": "npm run check"
   },
+  "engines": {
+    "dsh": ">=0.2.0"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "weekly-report",
+    "weekly",
+    "worklog"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doombeaker/dsh-weekly-log.git"
+  },
+  "homepage": "https://github.com/doombeaker/dsh-weekly-log#readme",
+  "bugs": {
+    "url": "https://github.com/doombeaker/dsh-weekly-log/issues"
+  },
   "author": "姚迟",
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT",
-  "keywords": ["dsh", "deepseek-harness", "plugin", "weekly-report", "weekly"]
+  "license": "MIT"
 }

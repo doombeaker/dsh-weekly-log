@@ -1,86 +1,92 @@
-# 周报清单（dsh-weekly-report）
+# Weekly log (dsh-weekly-log)
 
-一个 DeepSeek Harness 插件：平时顺手记下「做了什么 / 要做什么」，写周报时按周导出成周报正文，并可一键调用默认模型检查整理。
+**Export any ISO week as a weekly report in one click — 1 panel, 2 agent tools, 0 API keys.**
 
-不考核、不统计，只为「一周结束后不用再回忆」。
+Keep a running list of work items in a panel, copy any ISO week out as a weekly report, and let the configured model tidy the wording — 2 agent tools, no API key.
 
-## 功能
+![The weekly log panel in DeepSeek Harness](assets/screenshots/01-panel.png)
 
-- **面板**：侧边栏「周报」入口，一条一条记，按周翻看；计划项可以标完成 / 顺延 / 中止，顺延保留因果痕迹。
-- **导出**：按「上周完成 + 本周计划」渲染成周报，可编辑、复制、存成 md。
-- **一键整理**：用 Harness 当前默认模型做措辞层面的整理（压字数、统一句式、修错别字），不新增事实；结果先展示，再由你决定采用还是收起。
-- **对话**：`weekly_log` / `weekly_report` 两个工具，说「记一下…」「这周我都记了什么」「生成周报」即可。
+**Install (one command)**:
 
-## 安装
+```
+plugin_manager install_bundle target=dsh-weekly-log
+```
 
-在 DeepSeek Harness 里把本目录作为插件包安装即可（Plugin Manager 的本地目录安装，或 `plugin_manager` 的 `install_bundle`，`target` 传本目录的绝对路径）。
+**Cost / prerequisites**: no API key needed. "AI polish" calls the model already configured in Harness and is billed through that model. Entries live in `~/.dsh/weekly-report/data.json`; exported reports are plain Markdown.
 
-安装后在页面里刷新一次，侧边栏会出现「周报」图标。
+## What it does
 
-## 用法
+Log a line while you work, then stop trying to remember what you did when the report is due.
 
-1. **记一条**：输入框写一句话，选择「完成」或「计划」，回车提交。
-   - 默认是「完成」，因为工作日里顺手记的绝大多数是刚做完的事。
-   - 计划可以记到别的周：翻到目标周再记，提示会说明「将记入第 N 周的计划」。
-2. **回顾**：周导航翻看任意一周；点「回到本周」随时跳回当前周（当前周有品牌色标记）。
-3. **处理计划**：每条计划项可以「完成 / 顺延 / 中止」。顺延不复制条目，只改归属周并留痕，所以上一周仍能看到「顺延至第 N 周」。
-4. **出周报**：点「生成周报」，得到「上周工作 / 本周工作」草稿；再点「AI 检查整理」，确认后采用或收起；最后复制或存 md。
+- **Panel**: sidebar entry, one line per item, browse any week, mark a plan as done / carried / aborted.
+- **Carry-forward**: carrying keeps causal history — last week still shows "carried to week 46", and this week's plan holds the same item.
+- **Export**: `last week's done` + `this week's plan` rendered into a weekly report you can edit, copy, or save as Markdown.
+- **AI polish**: one click with the configured model fixes wording, length and typos; the result is shown next to your draft, so you adopt it or drop it.
+- **In chat**: `weekly_log` and `weekly_report` tools, so "log this", "what did I log this week" and "build the report" work from the conversation.
 
-## 条目模型
+## Usage
 
-| 字段 | 说明 |
+1. **Log**: type a line, pick 完成 (done, default) or 计划 (plan), press Enter. Plans can be filed into a future week by browsing there first.
+2. **Review**: the week bar moves through weeks; the current week is marked, and "back to current week" jumps home.
+3. **Handle plans**: 完成 / 顺延 / 中止. Carry changes the item's week and leaves a trace instead of copying it; aborted items stay visible but never enter a report.
+4. **Produce**: "generate report", then "AI polish", then copy or save.
+
+## Entry model
+
+| Field | Meaning |
 |---|---|
-| `text` | 一行正文，例如「完善并合并了 warmup 功能」 |
-| `state` | `plan` 计划 / `done` 完成 / `aborted` 中止 |
-| `week` | 归属周（ISO 周，如 `2026-W45`） |
-| `day` | 最近一次状态变更的日期 |
-| `tag` | 可选标签，例如 `warmup`、`crossing-studio`（只用于自己归类，不参与导出分组） |
-| `link` | 可选链接，导出时跟在正文后面 |
-| `history` | 创建 / 完成 / 中止 / 顺延 / 移动的痕迹，用于追溯因果 |
+| `text` | one line, e.g. "merged the warmup feature" |
+| `state` | `plan` / `done` / `aborted` |
+| `week` | owning ISO week, e.g. `2026-W45` |
+| `day` | date of the last state change |
+| `tag` | optional label, e.g. `warmup` (never used for report grouping) |
+| `link` | optional link, appended to the line in exports |
+| `history` | created / done / aborted / carried / moved traces |
 
-## 导出规则
+## Export rules
 
-- 上周工作 = 该周 `done` 的条目
-- 本周工作 = 当前为该周 `plan` 的条目（含顺延进来的）
-- 模板：`姓名：…`（设置里填一次，可留空）、`上周工作：`、`本周工作：`，每条一个 `- `
-- 「本周」取面板里选中的那一周，上一周即其前一周；面板上的提示文案会说明当前选择对应哪两周。
+- Last week's work = items `done` in that week.
+- This week's work = items currently `plan` for that week, including carried-in ones.
+- Template: `Name:`, `Last week:`, `This week:`, one `- ` line per item.
+- The selected week is "this week"; its predecessor is "last week". The panel states the mapping next to the button.
 
-## 数据与文件
+## Data and files
 
-- 数据：`$DSH_HOME/weekly-report/data.json`（默认 `~/.dsh/weekly-report/data.json`），profile 级、跨工作区、重启不丢。面板「设置」里能看到实际路径。
-- 导出：设置里的「导出目录」，默认当前工作区下的 `reports/`，文件名 `weekly-<ISO 周>.md`；可填绝对路径。
-- 存储是插件自管的 JSON 文件，没有使用框架的 KV domain——profile 里安装的插件解析不到 `@deepseek-ai/dsh-storage-domain`，因此以文件形式落地，行为等价。
+- Entries: `$DSH_HOME/weekly-report/data.json` (default `~/.dsh/weekly-report/data.json`) — profile-level, shared across workspaces, survives restarts. The panel shows the exact path.
+- Exports: directory from settings, default `reports/` under the current workspace, file `weekly-<ISO week>.md`.
+- The store is a plugin-owned JSON file rather than the framework KV domain: a profile-installed plugin cannot resolve `@deepseek-ai/dsh-storage-domain`, so it persists the same data as a file.
 
-## 升级
+## Upgrade
 
-面板「设置」里有版本号和「检查更新」。用 npm 安装时，发现新版本会在面板顶部出现提示条，点「升级」即走 `pluginManager.updateBundle`（先卸载再安装，失败自动回滚，完成后刷新页面）。
+Settings shows the running version and a "check for updates" action. Installed from npm, a new release appears as a banner and can be upgraded in place through `pluginManager.updateBundle` (uninstall + install, automatic rollback on failure). Local `link:` installs cannot self-upgrade — the panel says so instead of failing silently.
 
-本地目录链接安装（`link:`）不支持一键升级——发布到 npm 并从 registry 安装后该能力才可用。发布流程、市场索引和升级的坑都写在 [docs/PUBLISHING.md](docs/PUBLISHING.md)。
+Publishing, market index and upgrade caveats: [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
-## 目录结构
+## Repository layout
 
 ```
-index.js          Loader 入口：带 cache-busting 参数加载 lib/impl.js，改 Host 代码后重新激活即生效
-lib/impl.js       Host：存储、ISO 周计算、条目操作、两个工具、POST /weekly/api
-client.js         面板：sidebar.panellist 图标 + main 面板（key = weekly-report）
-cordis.patch.yml  插入 weekly-report 这一行
-locale/           meta 标题与描述（zh / en）
-icon.svg          插件图标
-docs/PUBLISHING.md 发布、升级与市场索引说明
-CHANGELOG.md      版本变更
+index.js           Loader entry: cache-busted import of lib/impl.js
+lib/impl.js        Host: store, ISO week math, item operations, 2 tools, POST /weekly/api
+client.js          Panel: sidebar.panellist icon + main panel (key = weekly-report)
+cordis.patch.yml   inserts the weekly-report row
+locale/            meta title and description (en / zh)
+assets/            store icon and screenshots
+screenshots.json   store screenshot list
+docs/PUBLISHING.md publishing, upgrade and market index
+CHANGELOG.md       release notes
 ```
 
-## 开发
+## Development
 
 ```bash
-npm run check      # node --check index.js client.js lib/impl.js
-npm pack --dry-run # 看发布包内容
+npm run check       # node --check index.js client.js lib/impl.js
+npm pack --dry-run  # inspect the published file set
 ```
 
-面板通过同源 `POST /weekly/api` 调 Host，动作：`state / week / add / update / setState / carry / delete / report / write / polish / settings`。面板与工具调用同一套操作实现。
+The panel calls the same-origin `POST /weekly/api` with actions `state / week / add / update / setState / carry / delete / report / write / polish / settings / checkUpdate / upgrade`; the panel and the agent tools share one implementation.
 
-## 已知限制
+## Known limitations
 
-- 只有中文界面（locale 文件里有中文标题与描述，面板文案目前固定中文）。
-- 「AI 检查整理」依赖 Harness 已配置默认模型；没有配置时会提示，不影响手动整理。
-- 数据不随工作区走，也不进 git；如果想让周报进版本库，导出目录指向仓库里的某个目录即可。
+- The panel UI is Chinese only; locale files carry both languages for the store.
+- AI polish needs a configured default model; without one the panel says so and manual editing still works.
+- Data does not follow workspaces and is not in git; point the export directory at a repository path if you want reports versioned.

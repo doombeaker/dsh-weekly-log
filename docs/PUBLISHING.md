@@ -6,10 +6,10 @@
 
 ## 一、发布前检查
 
-1. **包名**：`dsh-weekly-report`。发布前确认 npm 上可用：
+1. **包名**：`dsh-weekly-log`。发布前确认 npm 上可用：
 
    ```bash
-   npm view dsh-weekly-report version
+   npm view dsh-weekly-log version
    ```
 
    若返回 404 说明可用；若被占用，`package.json` 的 `name`、`cordis.patch.yml` 的 `name`、`client.js` 里的模块 `id` 三处要一起改。
@@ -48,8 +48,8 @@ npm publish
 发布后用户用 registry 安装：
 
 ```
-plugin_manager install_bundle  target=dsh-weekly-report
-# 或指定版本：target=dsh-weekly-report@0.1.0
+plugin_manager install_bundle  target=dsh-weekly-log
+# 或指定版本：target=dsh-weekly-log@0.1.0
 ```
 
 **注意安装位置**：`link:`（本地目录链接）与 registry 安装是两种位置。Loader 按包位置缓存模块，两者互换必须重启 Harness 才彻底生效——所以「本地链接安装」状态下不能一键升级（见下）。
@@ -62,7 +62,7 @@ plugin_manager install_bundle  target=dsh-weekly-report
 
 实现要点：
 
-- 检查：`ctx.get('pluginManager').listVersions('dsh-weekly-report')`，只返回比已安装版本更新的发布，取第一个兼容（`bundle !== false`、非预发布废弃）的版本；结果缓存 10 分钟。
+- 检查：`ctx.get('pluginManager').listVersions('dsh-weekly-log')`，只返回比已安装版本更新的发布，取第一个兼容（`bundle !== false`、非预发布废弃）的版本；结果缓存 10 分钟。
 - 升级：`pluginManager.updateBundle(name, version)`。它会先校验目标版本存在、确实声明了 bundle、且兼容当前 DSH，然后用 HMR 卸载旧版、安装新版，**失败会自动回滚**。
 - 升级在后台跑，进度写到 `~/.dsh/weekly-report/upgrade-state.json`，面板每 2 秒轮询一次，直到 `phase` 为 `done` / `failed`。
 
@@ -70,7 +70,7 @@ plugin_manager install_bundle  target=dsh-weekly-report
 
 | 安装方式 | 能否一键升级 |
 |---|---|
-| registry（`dsh-weekly-report@0.1.0`） | ✅ 同一安装位置内换版本，HMR 生效，通常无需重启 |
+| registry（`dsh-weekly-log@0.1.0`） | ✅ 同一安装位置内换版本，HMR 生效，通常无需重启 |
 | `link:` 本地目录 | ❌ 面板会说明原因，需手动改为 registry 安装 |
 
 `canSelfUpgrade=false` 时面板不显示升级按钮，只在设置里给出原因，避免点了没反应。
@@ -85,8 +85,8 @@ plugin_manager install_bundle  target=dsh-weekly-report
 ### 手动路径
 
 ```
-plugin_manager remove_bundle  target=dsh-weekly-report
-plugin_manager install_bundle target=dsh-weekly-report@<version>
+plugin_manager remove_bundle  target=dsh-weekly-log
+plugin_manager install_bundle target=dsh-weekly-log@<version>
 ```
 
 ---
@@ -103,7 +103,7 @@ plugin_manager install_bundle target=dsh-weekly-report@<version>
   "title": { "en": "Weekly report tools", "zh": "周报工具" },
   "plugins": [
     {
-      "name": "dsh-weekly-report",
+      "name": "dsh-weekly-log",
       "title": { "en": "Weekly report list", "zh": "周报清单" },
       "description": { "en": "Log one line at a time, export a week when the report is due." },
       "icon": "icon.svg",
