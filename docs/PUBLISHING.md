@@ -99,6 +99,7 @@ plugin_manager install_bundle  target=dsh-weekly-log
 
 1. **镜像延迟**：刚发布 1–2 分钟内，安装来源的镜像可能还没有新版本，`updateBundle` 会停在 `step: "check"`。代码里做了退避重试（0s / 15s / 20s），最后一次改用 `https://registry.npmjs.org/`。
 2. **升级过程中不要重启 Harness**：升级是「卸载 → 安装 → 应用」，中途重启可能让 profile 处于半应用状态。面板的提示条也会写明这一点。
+3. **升级完成后不要立刻刷新页面**（2026-11 两次实测 + 一次本插件复现）：页面刷新会让 DSH 的 web boot 重新导入插件，此时容易报 `web boot: 1 entry did not activate — <pkg>: import failed`；平台把「有条目未激活」当作 web boot 的致命错误，**整个应用会退出**。升级本身已经通过 HMR 生效，不需要刷新；如果界面确实没变，请重启 Harness（冷启动会按新路径重新解析），而不是刷新页面。
 
 升级结果里 `application` 为 `applied` 时刷新页面即可；为 `restart-required` 时按提示重启。
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-weekly-log",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Keep a running list of work items in a panel, copy any ISO week out as a weekly report, and let the configured model tidy the wording — 2 agent tools, no API key.",
   "type": "module",
   "main": "index.js",

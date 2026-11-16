@@ -436,9 +436,9 @@ window.__ModuleLoader__.load({
         const [text, actions] = upd.upgrading
           ? [`正在升级到 ${updTarget ?? '新版本'}…`, [h('span', { key: 'wait', className: 'wr-hint' }, '升级期间不要重启 Harness')]]
           : updApplied
-            ? [`已升级到 ${updTarget ?? '新版本'}，刷新页面即可生效`, [button('刷新页面', () => window.location.reload(), 'primary'), button('稍后', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
+            ? [`已升级到 ${updTarget ?? '新版本'}，已生效；无需刷新页面（刷新有概率让 DSH 启动失败，必要时重启 Harness）`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
             : updRestart
-              ? [`已安装 ${updTarget ?? '新版本'}，需要重启 Harness 后生效`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
+              ? [`已安装 ${updTarget ?? '新版本'}，需要重启 Harness 生效——不要用页面刷新代替`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
               : updFailed
                 ? [`升级失败：${updLast?.error?.diagnostic ?? updLast?.error?.message ?? updLast?.error?.code ?? '未知原因'}`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
                 : [`发现新版本 ${updData.latest}（当前 ${updData.installedVersion}）`, [

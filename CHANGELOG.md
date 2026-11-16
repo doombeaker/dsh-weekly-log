@@ -2,6 +2,12 @@
 
 本文件记录插件每个发布版本的变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.1.2] - 2026-11-16
+
+### Changed
+
+- 升级完成后不再提示「刷新页面」。实测在升级后立刻刷新，会让 DSH 的 web boot 重新导入插件失败（`web boot: 1 entry did not activate`），平台把未激活的条目视作致命错误，整个应用退出；同样的问题在 `dsh-bizyair` 上也出现过两次。升级本身已通过 HMR 生效，无需刷新；需要时请重启 Harness。
+
 ## [0.1.1] - 2026-11-16
 
 ### Fixed
