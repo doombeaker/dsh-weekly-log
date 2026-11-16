@@ -28,7 +28,7 @@ Log a line while you work, then stop trying to remember what you did when the re
 
 1. **Log**: type a line, pick 完成 (done, default) or 计划 (plan), press Enter. Plans can be filed into a future week by browsing there first.
 2. **Review**: the week bar moves through weeks; the current week is marked, and "back to current week" jumps home.
-3. **Handle plans**: 完成 / 顺延 / 中止. Carry changes the item's week and leaves a trace instead of copying it; aborted items stay visible but never enter a report.
+3. **Handle plans**: done / carry / abort. **Only carry changes the item's week** — done, abort and reopen keep the entry in the week it belongs to; aborted items stay visible but never enter a report.
 4. **Produce**: "generate report", then "AI polish", then copy or save.
 
 ## Entry model
@@ -37,7 +37,7 @@ Log a line while you work, then stop trying to remember what you did when the re
 |---|---|
 | `text` | one line, e.g. "merged the warmup feature" |
 | `state` | `plan` / `done` / `aborted` |
-| `week` | owning ISO week, e.g. `2026-W45` |
+| `week` | owning ISO week, e.g. `2026-W45`; only carry changes it |
 | `day` | date of the last state change |
 | `tag` | optional label, e.g. `warmup` (never used for report grouping) |
 | `link` | optional link, appended to the line in exports |
