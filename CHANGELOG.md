@@ -2,6 +2,12 @@
 
 本文件记录插件每个发布版本的变更。格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.1.3] - 2026-11-19
+
+### Fixed
+
+- 上一次升级留下的 `upgrade-state.json` 不再一直占据提示条。它此前会让「已升级到 0.1.1」的旧提示压住「发现新版本 0.1.2」，导致能看到新版本却点不到升级按钮。现在超过 15 分钟的升级记录会被标记为 `stale` 并被面板忽略，且「有新版本」优先于旧升级结果展示。
+
 ## [0.1.2] - 2026-11-16
 
 ### Changed

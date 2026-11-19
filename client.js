@@ -423,7 +423,7 @@ window.__ModuleLoader__.load({
       const relative = isCurrent ? '本周' : week === snap.lastWeek ? '上周' : week === snap.nextWeek ? '下周' : ''
 
       const updData = upd.data
-      const updLast = updData?.lastUpgrade
+      const updLast = updData?.lastUpgrade && updData.lastUpgrade.stale !== true ? updData.lastUpgrade : null
       const updTarget = updLast?.target ?? updData?.latest
       const updApplied = updLast?.phase === 'done' && updLast?.application === 'applied'
       const updRestart = updLast?.phase === 'done' && updLast?.application === 'restart-required'
@@ -435,16 +435,18 @@ window.__ModuleLoader__.load({
         if (!upd.banner || !ready) return null
         const [text, actions] = upd.upgrading
           ? [`正在升级到 ${updTarget ?? '新版本'}…`, [h('span', { key: 'wait', className: 'wr-hint' }, '升级期间不要重启 Harness')]]
+          : updNew
+            ? [`发现新版本 ${updData.latest}（当前 ${updData.installedVersion}）`, [
+              button(upd.armed ? `确认升级到 ${updData.latest}` : '升级', startUpgrade, upd.armed ? 'accent' : ''),
+              button('稍后', () => setUpd(current => ({ ...current, banner: false })), 'ghost'),
+            ]]
           : updApplied
             ? [`已升级到 ${updTarget ?? '新版本'}，已生效；无需刷新页面（刷新有概率让 DSH 启动失败，必要时重启 Harness）`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
             : updRestart
               ? [`已安装 ${updTarget ?? '新版本'}，需要重启 Harness 生效——不要用页面刷新代替`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
               : updFailed
                 ? [`升级失败：${updLast?.error?.diagnostic ?? updLast?.error?.message ?? updLast?.error?.code ?? '未知原因'}`, [button('知道了', () => setUpd(current => ({ ...current, banner: false })), 'ghost')]]
-                : [`发现新版本 ${updData.latest}（当前 ${updData.installedVersion}）`, [
-                  button(upd.armed ? `确认升级到 ${updData.latest}` : '升级', startUpgrade, upd.armed ? 'accent' : ''),
-                  button('稍后', () => setUpd(current => ({ ...current, banner: false })), 'ghost'),
-                ]]
+                : null
         return h('div', { className: 'wr-update' },
           h('span', { className: 'wr-grow' }, text),
           ...actions)
