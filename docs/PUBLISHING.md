@@ -63,7 +63,38 @@ npm view dsh-weekly-log dist.shasum  --registry=https://registry.npmjs.org      
 
 ---
 
-## 三、从 npm 安装
+## 三、自动发布（Trusted Publishing，推荐）
+
+手动 `npm publish` 在 2FA 账号上有两个坑：每次都要 OTP，且本机的 web-login token 会过期（实测两次：`401` 表现为 `404`）。改成 GitHub Actions OIDC 后，发版只需要推一个 tag。
+
+仓库里已有 [`.github/workflows/release.yml`](../.github/workflows/release.yml)：push `v*` tag 时自动跑 `npm run check` → `npm publish --access public`，由 npm 的 Trusted Publishing 授权，**不需要 token、不需要 OTP**。
+
+一次性配置（在 npmjs.com，需要包的所有者 + 2FA）：
+
+1. 打开 <https://www.npmjs.com/package/dsh-weekly-log/access>
+2. 找到 **Trusted publishing** → **Add a trusted publisher** → **GitHub Actions**
+3. 填写：
+   - Organization or user：`doombeaker`
+   - Repository：`dsh-weekly-log`
+   - Workflow filename：`release.yml`
+   - Environment：留空
+4. 保存（可能要求 OTP）
+
+配置好之后发版：
+
+```bash
+# 1) 改版本 + CHANGELOG，提交
+npm version patch --no-git-tag-version   # 或手动改 package.json
+git commit -am "release: v0.1.4"
+# 2) 打 tag 并推送，CI 自动发布
+git tag v0.1.4 && git push origin main --tags
+```
+
+workflow 会先校验 tag 与 `package.json` 版本一致，再发布；`dsh.so`、`awesome` 这些渠道只认 npm 上的版本，不需要额外动作。
+
+手动发布仍可用作后路（见上一节），但要先 `npm login` 并输入 OTP。
+
+## 四、从 npm 安装
 
 发布后用户用 registry 安装：
 
